@@ -1,1 +1,48 @@
+services:
+  webapp:
+    build: .
+    labels:
+      logging: "promtail"
+      logging_jobname: "webapp_logs"
+      webapp: "varlogs"
+    ports:
+      - 8080:8000
+    environment:
+      - PORT=8000
+    depends_on:
+      - loki
 
+  grafana:
+    image: grafana/grafana:10.4.0
+    ports:
+      - 9090:3000
+    volumes:
+      - ./loki-config/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_SERVER_HTTP_PORT=3000
+      - GF_SERVER_PROTOCOL=http
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  loki:
+    image: grafana/loki:2.9.0
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - ./loki-config/promtail.yaml:/etc/promtail/webapp-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/webapp-config.yaml
+    depends_on:
+      - loki
+
+volumes:
+  log-data:
