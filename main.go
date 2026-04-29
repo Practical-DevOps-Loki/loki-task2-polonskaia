@@ -34,7 +34,7 @@ func main() {
 
  go func() {
   for {
-   e.Logger.Error("dummy log")
+   e.Logger.Error("GET")
    time.Sleep(time.Second)
   }
  }()
