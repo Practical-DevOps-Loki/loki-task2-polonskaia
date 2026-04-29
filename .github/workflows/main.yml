@@ -21,7 +21,7 @@ jobs:
         private-key: ${{ secrets.APP_PRIVATE_KEY }}
     - uses: actions/checkout@v6
     - name: Build and start containers for a services
-      run: docker compose up -d
+      run: docker compose version; docker compose up -d --force-recreate
     - name: Test containers functionality
       uses: cypress-io/github-action@v6
       env:
