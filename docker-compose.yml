@@ -7,10 +7,11 @@ services:
       webapp: "varlogs"
     ports:
       - 8080:8000
+    volumes:
+    - log-data:/app/log/
     environment:
       - PORT=8000
-    depends_on:
-      - loki
+      - LOG_PATH=/app/log/app.log
 
   grafana:
     image: grafana/grafana:10.4.0
@@ -35,11 +36,10 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
 
   promtail:
-    image: grafana/promtail:2.9.0
+    image: grafana/promtail
     volumes:
       - ./loki-config/promtail.yaml:/etc/promtail/webapp-config.yaml
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+      - log-data:/var/log/webapp:ro
     command: -config.file=/etc/promtail/webapp-config.yaml
     depends_on:
       - loki
